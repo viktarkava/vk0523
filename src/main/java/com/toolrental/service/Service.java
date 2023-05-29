@@ -38,18 +38,24 @@ public class Service {
 
 	public Tool getTool(Scanner sc) throws ToolRentalException {
 		String code;
-		Tool ret = null;
-		while (ret == null) {
+		Tool tool = null;
+		while (tool == null) {
 			System.out.println("Enter Tool code - ");
 			code = sc.nextLine();
-			for (Tool t : tools) {
-				if (t.getCode().equals(code.toUpperCase())) {
-					ret = t;
-				}
+			tool = getToolFromDB(code);
+		}
+		return tool;
+	}
+
+	private Tool getToolFromDB(String code) throws ToolRentalException {
+		Tool ret = null;
+		for (Tool t : tools) {
+			if (t.getCode().equals(code.toUpperCase())) {
+				ret = t;
 			}
-			if (ret == null) {
-				throw new ToolRentalException("Tool with code " + code + " is not available. Please try again.");
-			}
+		}
+		if (ret == null) {
+			throw new ToolRentalException("Tool with code " + code + " is not available. Please try again.");
 		}
 		return ret;
 	}
@@ -143,7 +149,7 @@ public class Service {
 
 		verifyDiscount(discount);
 		verifyDaysOfRental(rentalDays);
-
+		tool = getToolFromDB(tool.getCode());
 		RentalAgreement agreement = new RentalAgreement(tool);
 		agreement.setToolCode(tool.getCode());
 		agreement.setToolType(tool.getType());
@@ -155,12 +161,16 @@ public class Service {
 		int chargeDays = getChargeDays(tool, rentalDays, date);
 		agreement.setChargeDays(chargeDays);
 		double rentPreDiscount = calculateRentPreDiscount(tool, chargeDays);
-		agreement.setPreDiscountCharge(rentPreDiscount);
+		agreement.setPreDiscountCharge(roundUp(rentPreDiscount));
 		agreement.setDiscountPercent(discount);
 		double discountAmount = rentPreDiscount * discount / 100;
-		agreement.setDiscountAmount(discountAmount);
-		agreement.setFinalCharge(rentPreDiscount - discountAmount);
+		agreement.setDiscountAmount(roundUp(discountAmount));
+		agreement.setFinalCharge(roundUp(rentPreDiscount - discountAmount));
 
 		return agreement;
+	}
+
+	public double roundUp(double in) {
+		return Math.round(in * 100.0) / 100.0;
 	}
 }
