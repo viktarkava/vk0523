@@ -1,4 +1,6 @@
-package com.toolrental;
+package com.toolrental.entity;
+
+//vk0523
 
 public class Tool {
 	private String code;

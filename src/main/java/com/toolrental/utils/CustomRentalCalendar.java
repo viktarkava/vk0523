@@ -1,9 +1,11 @@
-package com.toolrental;
+package com.toolrental.utils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+
+//vk0523
 
 public class CustomRentalCalendar {
 	private Set<LocalDate> holidays = new HashSet<>();

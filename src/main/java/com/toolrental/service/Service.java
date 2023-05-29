@@ -1,4 +1,4 @@
-package com.toolrental;
+package com.toolrental.service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,7 +10,12 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
+import com.toolrental.entity.RentalAgreement;
+import com.toolrental.entity.Tool;
 import com.toolrental.exceptions.ToolRentalException;
+import com.toolrental.utils.CustomRentalCalendar;
+
+//vk0523
 
 public class Service {
 	List<Tool> tools;
@@ -29,12 +34,6 @@ public class Service {
 
 	public void setTools(List<Tool> tools) {
 		this.tools = tools;
-	}
-
-	public void verifyDaysOfRental(int daysOfRental) throws ToolRentalException {
-		if (daysOfRental < 1) {
-			throw new ToolRentalException("Rental day count must be 1 or greater.");
-		}
 	}
 
 	public Tool getTool(Scanner sc) throws ToolRentalException {
@@ -89,6 +88,12 @@ public class Service {
 		}
 	}
 
+	public void verifyDaysOfRental(int daysOfRental) throws ToolRentalException {
+		if (daysOfRental < 1) {
+			throw new ToolRentalException("Rental day count must be 1 or greater.");
+		}
+	}
+
 	public LocalDate getCheckoutDate(Scanner sc) throws ToolRentalException {
 		String date;
 		Date ret = null;
@@ -109,7 +114,10 @@ public class Service {
 
 	public int getChargeDays(Tool tool, int daysOfRental, LocalDate startDate) {
 		int ret = 0;
+		// Charge days - Count of chargeable days, from day after checkout through and
+		// including due date, excluding “no charge” days as specified by the tool type.
 		CustomRentalCalendar cc = new CustomRentalCalendar(startDate.getYear());
+		startDate = startDate.plusDays(1);
 		LocalDate endDate = startDate.plusDays(daysOfRental - 1);
 		if (tool.isWeekdayCharge()) {
 			int numberOfWorkDays = cc.getNumberOfWorkdaysBetween(startDate, endDate);
@@ -126,13 +134,33 @@ public class Service {
 		return ret;
 	}
 
-	double calculateRentPreDiscount(Tool tool, int chargeDays) throws ToolRentalException {
+	public double calculateRentPreDiscount(Tool tool, int chargeDays) throws ToolRentalException {
 		return chargeDays * tool.getDailyCharge();
 	}
 
-	double calculateRentWithDiscount(double rentPreDiscount, int discount) throws ToolRentalException {
-		verifyDiscount(discount);
-		return rentPreDiscount * (100 - discount) / 100;
-	}
+	public RentalAgreement generateAgreement(Tool tool, int rentalDays, int discount, LocalDate date)
+			throws ToolRentalException {
 
+		verifyDiscount(discount);
+		verifyDaysOfRental(rentalDays);
+
+		RentalAgreement agreement = new RentalAgreement(tool);
+		agreement.setToolCode(tool.getCode());
+		agreement.setToolType(tool.getType());
+		agreement.setToolBrand(tool.getBrand());
+		agreement.setRentalDays(rentalDays);
+		agreement.setCheckoutDate(date.toString());
+		agreement.setDueDate(date.plusDays(rentalDays).toString());
+		agreement.setDailyRentalCharge(tool.getDailyCharge());
+		int chargeDays = getChargeDays(tool, rentalDays, date);
+		agreement.setChargeDays(chargeDays);
+		double rentPreDiscount = calculateRentPreDiscount(tool, chargeDays);
+		agreement.setPreDiscountCharge(rentPreDiscount);
+		agreement.setDiscountPercent(discount);
+		double discountAmount = rentPreDiscount * discount / 100;
+		agreement.setDiscountAmount(discountAmount);
+		agreement.setFinalCharge(rentPreDiscount - discountAmount);
+
+		return agreement;
+	}
 }

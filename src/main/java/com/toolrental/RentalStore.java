@@ -1,10 +1,14 @@
 package com.toolrental;
 
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.Scanner;
 
+import com.toolrental.entity.RentalAgreement;
+import com.toolrental.entity.Tool;
 import com.toolrental.exceptions.ToolRentalException;
+import com.toolrental.service.Service;
+
+//vk0523
 
 public class RentalStore {
 	public static void main(String[] args) throws Exception {
@@ -39,21 +43,8 @@ public class RentalStore {
 				}
 			}
 		}
-		System.out.println("Tool code: " + tool.getCode());
-		System.out.println("Tool type: " + tool.getType());
-		System.out.println("Tool Brand: " + tool.getBrand());
-		System.out.println("Rental days: " + rentalDays);
-		System.out.println("Check out date: " + date.toString());
-		System.out.println("Due date: " + date.plusDays(rentalDays).toString());
-		System.out.println("Daily rental charge: " + tool.getDailyCharge());
-		int chargeDays = service.getChargeDays(tool, rentalDays, date);
-		System.out.println("Charge days: " + chargeDays);
-		double rentPreDiscount = 0;
-		rentPreDiscount = service.calculateRentPreDiscount(tool, chargeDays);
-		DecimalFormat df = new DecimalFormat("##,##0.00");
-		System.out.println("Pre-discount charge: $" + df.format(rentPreDiscount));
-		System.out.println("Discount percent: " + discount + "%");
-		System.out.println("Discount amount: $" + df.format(rentPreDiscount * discount / 100));
-		System.out.println("Final charge: $" + df.format(service.calculateRentWithDiscount(rentPreDiscount, discount)));
+
+		RentalAgreement agreement = service.generateAgreement(tool, rentalDays, discount, date);
+		agreement.printRentalAgreement();
 	}
 }
