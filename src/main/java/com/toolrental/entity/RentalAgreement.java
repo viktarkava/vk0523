@@ -141,7 +141,6 @@ public class RentalAgreement {
 		System.out.println("Daily rental charge: " + dailyRentalCharge);
 		System.out.println("Charge days: " + chargeDays);
 		DecimalFormat df = new DecimalFormat("##,##0.00");
-		df.setRoundingMode(RoundingMode.UP);
 		System.out.println("Pre-discount charge: $" + df.format(preDiscountCharge));
 		System.out.println("Discount percent: " + discountPercent + "%");
 		System.out.println("Discount amount: $" + df.format(discountAmount));

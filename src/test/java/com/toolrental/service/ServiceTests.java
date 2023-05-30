@@ -1,4 +1,4 @@
-package com.toolrental;
+package com.toolrental.service;
 
 import static org.junit.Assert.assertTrue;
 
